@@ -656,7 +656,13 @@ function renderLogin(msg){
   $('#loginForm').onsubmit = async e => {
     e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; btn.textContent = '확인 중…';
     const {error} = await sb.auth.signInWithPassword({email: $('#l-email').value.trim(), password: $('#l-pw').value});
-    if(error) renderLogin('이메일 또는 비밀번호가 맞지 않습니다.');
+    if(error){
+      console.error(error);
+      const m = String(error.message || '');
+      if(/not confirmed/i.test(m)) renderLogin('이메일 인증이 끝나지 않은 계정입니다. Supabase에서 사용자를 인증(Confirm) 처리해 주세요.');
+      else if(/invalid login credentials/i.test(m)) renderLogin('이메일 또는 비밀번호가 맞지 않습니다.');
+      else renderLogin('로그인 실패: ' + m);
+    }
   };
 }
 let started = false;
